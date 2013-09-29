@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project basedir="." default="build" name="PrivateLabelReporting">
+    <property environment="env"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    
+	<property name="target" value="1.7"/>
+    <property name="source" value="1.7"/>
+	
+	<property name="TOMEE_HOME" value="/opt/tomcat/apache-tomee-plus-1.5.2"/>
+	<property name="TOMEE_LIB" value="${TOMEE_HOME}/lib"/>
+	<property name="APP_HOME" value="${TOMEE_HOME}/webapps/PrivateLabel"/>
+	<property name="APP_JAR_DIR" value="${APP_HOME}/WEB-INF/lib"/>
+	<property name="APP_BUILD_DIR" value="${APP_JAR_DIR}/PrivateLabelReporting"/>
+	<property name="JAVA_SHARE_DIR" value="/usr/share/java"/>
+
+	
+    <path id="PrivateLabelReporting.classpath">
+        <pathelement location="bin"/>
+        <!--<path refid="JUnit 4.libraryclasspath"/>-->
+        
+    	<pathelement location="${APP_BUILD_DIR}/conf/log4j.properties"/>
+    	<pathelement location="${APP_BUILD_DIR}/bin"/>
+
+    	<pathelement location="${JAVA_SHARE_DIR}/ant.jar"/>
+    	<pathelement location="${JAVA_SHARE_DIR}/ant-launcher.jar"/>
+    	<pathelement location="${JAVA_SHARE_DIR}/commons-launcher.jar"/>
+        <pathelement location="${JAVA_SHARE_DIR}/log4j.jar"/>
+        <pathelement location="${JAVA_SHARE_DIR}/commons-logging.jar"/>
+        <pathelement location="${JAVA_SHARE_DIR}/commons-lang.jar"/>
+		<pathelement location="${JAVA_SHARE_DIR}/java3d"/>
+		<pathelement location="${JAVA_SHARE_DIR}/java3d/j3dcore.jar"/>
+		<pathelement location="${JAVA_SHARE_DIR}/java3d/j3dutils.jar"/>
+		<pathelement location="${JAVA_SHARE_DIR}/java3d/vecmath.jar"/>
+		<pathelement location="${JAVA_SHARE_DIR}/junit.jar"/>
+		<pathelement location="${TOMEE_LIB}/jtds-1.2.5.jar"/>
+    	<pathelement location="${TOMEE_LIB}/Helios.jar"/>
+    	<pathelement location="${TOMEE_LIB}/jdom-2.0.5.jar"/>
+    </path>
+	<pathconvert property="mf.classpath" pathsep=" ">
+   	 	<path refid="PrivateLabelReporting.classpath" />
+  	</pathconvert>
+	
+    <echo message="Tomee Home: ${TOMEE_HOME}"/>
+    <echo message="Tomee Lib: ${TOMEE_LIB}"/>
+    <echo message="App Home: ${APP_HOME}"/>
+     <echo message="App Jar Dir: ${APP_JAR_DIR}"/>
+     <echo message="App Build Dir: ${APP_BUILD_DIR}"/>
+     <echo message="Java Share Dir: ${JAVA_SHARE_DIR}"/>
+   	 <echo message="Target Version: ${target}"/>
+     <echo message="Source Version: ${source}"/>
+	
+    <target name="init">
+    	
+        <mkdir dir="${APP_BUILD_DIR}/bin"/>
+        <copy includeemptydirs="false" todir="${APP_BUILD_DIR}/bin">
+            <fileset dir="${APP_BUILD_DIR}/src">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+    	
+    <target name="clean">
+        <delete dir="${APP_BUILD_DIR}/bin" verbose="true"/>
+    	<delete file="${APP_JAR_DIR}/PrivateLabelReporting.jar" verbose="true"/>
+    </target>
+	
+	<target name="reports">
+			
+		<mkdir dir="${APP_HOME}/reports/"/>
+		
+			<copy includeemptydirs="false" todir="${APP_HOME}/reports/" verbose="on">
+	            <fileset dir="${APP_BUILD_DIR}/reports/">
+	            </fileset>
+	        </copy>
+	</target>
+	<target name="ui" >
+		
+		<mkdir dir="${APP_HOME}/ui"/>
+		<mkdir dir="${APP_HOME}/ui/images"/>
+
+		<copy file="${APP_BUILD_DIR}/ui/index.jsp" todir="${APP_HOME}/" verbose="on" />
+		<copy file="${APP_BUILD_DIR}/ui/testResults.jsp" todir="${APP_HOME}/" verbose="on" />
+		<copy file="${APP_BUILD_DIR}/ui/help.jsp" todir="${APP_HOME}/" verbose="on" />
+		<copy file="${APP_BUILD_DIR}/ui/doc.jsp" todir="${APP_HOME}/" verbose="on" />
+		
+		<copy file="${APP_BUILD_DIR}/ui/footer.jsp" todir="${APP_HOME}/ui" verbose="on" />
+		<copy file="${APP_BUILD_DIR}/ui/menu.jsp" todir="${APP_HOME}/ui" verbose="on" />
+		<copy file="${APP_BUILD_DIR}/ui/header.jsp" todir="${APP_HOME}/ui" verbose="on" />
+		<copy file="${APP_BUILD_DIR}/ui/browserAssist.jsp" todir="${APP_HOME}/ui" verbose="on" />
+
+		<copy includeemptydirs="false" todir="${APP_HOME}/ui/images" verbose="on">
+			<fileset dir="${APP_BUILD_DIR}/ui/images">
+            </fileset>
+		</copy>
+
+	</target>
+	
+	<target name = "api">
+		<mkdir dir="${APP_HOME}/api"/>
+		<copy file="${APP_BUILD_DIR}/api/reporting.jsp" todir="${APP_HOME}/api/" verbose="on" />
+	</target>
+
+	<target name="crontab">
+		<exec executable="/usr/bin/crontab" failonerror="true">
+			<arg value="${APP_BUILD_DIR}/conf/crontab"/>
+		</exec>
+		<echo message="Crontab updated, don't forget to uncomment your cronjobs." />
+	</target>
+	  <target name="javadoc" depends="build-project">
+	        <javadoc access="private" author="true" destdir="${APP_HOME}/doc/" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" 
+				packagenames="*" 
+				source="${target}" sourcepath="${APP_BUILD_DIR}/src" splitindex="true" use="true" version="true" useexternalfile="true" >
+				
+				<classpath refid="PrivateLabelReporting.classpath"/>
+				
+				<link href="http://download.oracle.com/javase/7/docs/api/"/>
+			</javadoc>
+	  </target>
+	<target name="testsuite" depends="build-project">
+		<java classname="test.HeliosTestSuite" failonerror="true" fork="yes">
+			<classpath refid="PrivateLabelReporting.classpath"/>
+		</java>
+	</target>
+	<target name="test" depends="build-project,jar">
+		<junit failureProperty="test.failure">
+      		<classpath refid="PrivateLabelReporting.classpath" />
+			
+			<!--two formatters, one for ant output, the other for the test files-->
+			<formatter type="plain" usefile="false" />
+			<formatter type="plain" usefile="true" extension="" />
+			
+			<test name="test.report.output.IVRAgentCSATDetailTest" todir="${APP_HOME}/test"/>
+			<test name="test.report.output.RefundTotalsTest" todir="${APP_HOME}/test"/>
+			<test name="test.report.output.RefundCountTest" todir="${APP_HOME}/test"/>
+			<test name="test.report.output.TopRefundReasonsTest" todir="${APP_HOME}/test"/>
+			<test name="test.report.output.TopCaseDriversTest" todir="${APP_HOME}/test"/>
+			<test name="test.report.output.NoSaleDriversTest" todir="${APP_HOME}/test"/>
+			<test name="test.report.output.RealtimeSalesTest" todir="${APP_HOME}/test"/>
+			<test name="test.report.output.CallVolumeTest" todir="${APP_HOME}/test"/>
+			<test name="test.report.output.AverageOrderValueTest" todir="${APP_HOME}/test"/>
+			<test name="test.report.output.SalesCountTest" todir="${APP_HOME}/test"/>
+			<test name="test.report.output.IVRCSATTest" todir="${APP_HOME}/test"/>
+			<test name="test.report.output.ConversionTest" todir="${APP_HOME}/test"/>
+			<test name="test.report.output.LMICSATTest" todir="${APP_HOME}/test"/>			
+    	</junit>
+		<!--
+		<copy includeemptydirs="true" todir="${APP_HOME}/test/">
+        	<fileset dir="test">
+        	</fileset>
+        </copy>
+        -->
+    	<fail message="test failed" if="test.failure" />
+	</target>
+    <target depends="clean" name="cleanall"/>
+    <target depends="build-subprojects,build-project,jar" name="build"/>
+    <target name="build-subprojects"/>
+	
+    <target depends="init" name="build-project">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" verbose="on">
+            <src path="${APP_BUILD_DIR}/src"/>
+            <classpath refid="PrivateLabelReporting.classpath"/>
+        </javac>
+    </target>
+	
+	<target name="jar" depends="build-project" >
+		<jar description="Jar for Tomcat Deployment" destfile="${APP_BUILD_DIR}/PrivateLabelReporting.jar" basedir="bin" includes="**/*.class" >
+
+			
+			<fileset dir="${APP_BUILD_DIR}/conf"/>
+			<fileset dir="${APP_BUILD_DIR}/lib"/>
+			
+    		<manifest>
+    			<attribute name="Awesome" value="true"/>
+     			<attribute name="Main-Class" value=""/>
+				<attribute name="Class-Path" value="${mf.classpath}"/>
+			</manifest>
+  		</jar>
+  	</target>
+	
+	
+	<target name="forcedeploy" depends="build-project,jar,javadoc,reports,ui,crontab,api">
+	  	
+			<copy file="PrivateLabelReporting.jar" todir="${APP_JAR_DIR}" verbose="on" />
+			
+			<exec executable="${APP_BUILD_DIR}/scripts/tomcatRestart.pl" failonerror ="true"/>
+  			<exec executable="/bin/touch" failonerror ="true" >
+  				<arg value = "${APP_BUILD_DIR}/log/reporting.log"/>
+  			</exec>
+			<exec executable="/bin/date" />
+	  		
+	  </target>
+</project>

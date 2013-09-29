@@ -1,0 +1,5 @@
+#*/5 * * * * /usr/bin/perl -w -I /opt/tomcat/apache-tomee-plus-1.5.2/webapps/PrivateLabel/WEB-INF/lib/PrivateLabelReporting/scripts/dashboardGeneration/ /opt/tomcat/apache-tomee-plus-1.5.2/webapps/PrivateLabel/WEB-INF/lib/PrivateLabelReporting/scripts/dashboardGeneration/generateReports.pl >> /opt/tomcat/webapps/PrivateLabel/WEB-INF/lib/PrivateLabelReporting/log/dashboards.log
+
+#* * * * * /usr/bin/php /opt/tomcat/apache-tomee-plus-1.5.2/webapps/PrivateLabel/WEB-INF/lib/PrivateLabelReporting/scripts/dissatQueue/dissatQueue.php >> /opt/tomcat/apache-tomee-plus-1.5.2/webapps/PrivateLabel/WEB-INF/lib/PrivateLabelReporting/log/dissatQueue.log
+
+#0,20,40 * * * * /usr/bin/perl -w /opt/tomcat/Helios/scripts/tomcatWatchdog.pl

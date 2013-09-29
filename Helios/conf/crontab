@@ -1,3 +1,0 @@
-*/5 * * * * /usr/bin/perl -w -I /opt/tomcat/webapps/birt-viewer/WEB-INF/lib/Helios/scripts/dashboardGeneration/ /opt/tomcat/webapps/birt-viewer/WEB-INF/lib/Helios/scripts/dashboardGeneration/generateReports.pl >> /opt/tomcat/webapps/birt-viewer/WEB-INF/lib/Helios/log/dashboards.log
-
-* * * * * /usr/bin/php /opt/tomcat/webapps/birt-viewer/WEB-INF/lib/Helios/scripts/dissatQueue/dissatQueue.php >> /opt/tomcat/webapps/birt-viewer/WEB-INF/lib/Helios/log/dissatQueue.log

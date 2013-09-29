@@ -1,5 +1,0 @@
-#*/5 * * * * /usr/bin/perl -w -I /opt/tomcat/webapps/birt-viewer/WEB-INF/lib/PrivateLabelReporting/scripts/dashboardGeneration/ /opt/tomcat/webapps/birt-viewer/WEB-INF/lib/PrivateLabelReporting/scripts/dashboardGeneration/generateReports.pl >> /opt/tomcat/webapps/birt-viewer/WEB-INF/lib/PrivateLabelReporting/log/dashboards.log
-
-#* * * * * /usr/bin/php /opt/tomcat/webapps/birt-viewer/WEB-INF/lib/PrivateLabelReporting/scripts/dissatQueue/dissatQueue.php >> /opt/tomcat/webapps/birt-viewer/WEB-INF/lib/PrivateLabelReporting/log/dissatQueue.log
-
-#0,20,40 * * * * /usr/bin/perl -w /opt/tomcat/webapps/birt-viewer/WEB-INF/lib/Helios/scripts/tomcatWatchdog.pl

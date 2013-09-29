@@ -1,1 +1,0 @@
-0 * * * * /usr/bin/php /opt/privatelabel/LMI_Replication/src/LMI_Replication.php >> /opt/privatelabel/LMI_Replication/log/replication.log
