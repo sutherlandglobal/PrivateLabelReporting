@@ -17,6 +17,7 @@
 		<pathelement location="${SITE_LIB}/jcommon-1.0.21.jar" />
     	<pathelement location="${SITE_LIB}/jfreechart-1.0.17.jar"/>
         <pathelement location="${SITE_LIB}/log4j-1.2.17.jar"/>
+    	<pathelement location="${SITE_LIB}/gson-2.2.4.jar"/>
         <pathelement location="${SITE_LIB}/servlet-api-2.5.jar"/>
     	<pathelement location="${SITE_LIB}/commons-collections3.jar"/>
     	<pathelement location="${SITE_LIB}/commons-lang.jar"/>
@@ -32,9 +33,11 @@
 		<pathelement location="${SITE_LIB}/jtds-1.2.5.jar"/>
     	<pathelement location="${SITE_LIB}/Helios.jar"/>
     	<pathelement location="${SITE_LIB}/jdom-2.0.5.jar"/>
+    	<pathelement location="${SITE_LIB}/junit4.jar"/>
 		<pathelement location="${SITE_LIB}/jcommon-1.0.21.jar" />
     	<pathelement location="${SITE_LIB}/jfreechart-1.0.17.jar"/>
         <pathelement location="${SITE_LIB}/log4j-1.2.17.jar"/>
+    	<pathelement location="${SITE_LIB}/gson-2.2.4.jar"/>
         <pathelement location="${SITE_LIB}/servlet-api-2.5.jar"/>
 	</path>
 	<pathconvert property="site.build.junit.classpath" pathsep=" ">
@@ -49,6 +52,7 @@
 		<pathelement location="${WEB_APP_DIR}/WEB-INF/lib/jcommon-1.0.21.jar" />
     	<pathelement location="${WEB_APP_DIR}/WEB-INF/lib/jfreechart-1.0.17.jar"/>
         <pathelement location="${WEB_APP_DIR}/WEB-INF/lib/log4j-1.2.17.jar"/>
+    	<pathelement location="${WEB_APP_DIR}/WEB-INF/lib/gson-2.2.4.jar"/>
         <pathelement location="${TOMEE_HOME}/lib/servlet-api.jar"/>
     </path>
 	<pathconvert property="site.deploy.classpath" pathsep=" ">
@@ -93,53 +97,46 @@
 		
 		<!-- load helios common resources into  ${SITE_BUILD_DIR}/ui -->
 		<mkdir dir="${SITE_BUILD_DIR}/webapp/WebContent"/>
-		<mkdir dir="${SITE_BUILD_DIR}/webapp/WebContent/js"/>
 		<mkdir dir="${SITE_BUILD_DIR}/webapp/WebContent/css"/>
+		<mkdir dir="${SITE_BUILD_DIR}/webapp/WebContent/js"/>
 		<mkdir dir="${SITE_BUILD_DIR}/webapp/WebContent/images"/>
-		
-		<unzip src="${SITE_LIB}/Helios.jar" dest="${SITE_BUILD_DIR}/webapp/WebContent/images" >
+		<mkdir dir="${SITE_BUILD_DIR}/webapp/WebContent/logs"/>
+
+		<!-- get the ui resources from the helios lib -->
+		<unzip overwrite="true" src="${SITE_LIB}/Helios.jar" dest="${SITE_BUILD_DIR}/webapp/WebContent" >
 		    <patternset>
-		        <include name="resources/images/*"/>
+		    	<include name="resources/**"/>
 		    </patternset>
-		    <mapper type="flatten"/>
 		</unzip>
 		
-		<unzip src="${SITE_LIB}/Helios.jar" dest="${SITE_BUILD_DIR}/webapp/WebContent/js" >
-		    <patternset>
-		        <include name="resources/js/*"/>
-		    </patternset>
-		    <mapper type="flatten"/>
-		</unzip>
+		<!-- shuffle the helios ui resources into a viable web app -->
+		<!-- source is WebContent/resources/, target is WebContent -->
+		<!-- combine local and site css -->
+		<copy force="true" todir="${SITE_BUILD_DIR}/webapp/WebContent/css" verbose ="on">
+            <fileset dir="${SITE_BUILD_DIR}/webapp/WebContent/resources/local/css/"/>
+            <fileset dir="${SITE_BUILD_DIR}/webapp/WebContent/resources/site/css/"/>
+            <fileset dir="${SITE_BUILD_DIR}/webapp/WebContent/resources/css/"/>
+        </copy>
 		
-		<unzip src="${SITE_LIB}/Helios.jar" dest="${SITE_BUILD_DIR}/webapp/WebContent/css" >
-		    <patternset>
-		        <include name="resources/css/*"/>
-		    </patternset>
-		    <mapper type="flatten"/>
-		</unzip>
+		<!-- combine local and site js -->
+		<copy force="true" todir="${SITE_BUILD_DIR}/webapp/WebContent/js" verbose ="on">
+            <fileset dir="${SITE_BUILD_DIR}/webapp/WebContent/resources/js/"/>
+        </copy>
 		
-		<unzip src="${SITE_LIB}/Helios.jar" dest="${SITE_BUILD_DIR}/webapp/WebContent/css" >
-		    <patternset>
-		        <include name="resources/site/css/*"/>
-		    </patternset>
-		    <mapper type="flatten"/>
-		</unzip>
+		<!-- combine local and site jsp -->
+		<copy force="true" todir="${SITE_BUILD_DIR}/webapp/WebContent/" verbose ="on">
+            <fileset dir="${SITE_BUILD_DIR}/webapp/WebContent/resources/site/jsp"/>
+            <fileset dir="${SITE_BUILD_DIR}/webapp/WebContent/resources/jsp"/>
+        </copy>
 		
-		<unzip src="${SITE_LIB}/Helios.jar" dest="${SITE_BUILD_DIR}/webapp/WebContent" >
-		    <patternset>
-		        <include name="resources/site/jsp/*"/>
-		    </patternset>
-		    <mapper type="flatten"/>
-		</unzip>
+		<!-- load site banner into ui images dir-->
+		<copy force="true" todir ="${SITE_BUILD_DIR}/webapp/WebContent/images" verbose="on">
+			<file name="${SITE_LOGO}"/>
+			<fileset dir="${SITE_BUILD_DIR}/webapp/WebContent/resources/images"/>
+		</copy>
 		
-		<unzip src="${SITE_LIB}/Helios.jar" dest="${SITE_BUILD_DIR}/webapp/WebContent" >
-		    <patternset>
-		        <include name="resources/jsp/*"/>
-		    </patternset>
-		    <mapper type="flatten"/>
-		</unzip>
-		
-        <copy includeemptydirs="false" todir="${SITE_BUILD_DIR}/webapp/WEB-INF/classes" verbose ="on">
+		<!-- copy site classes (servlets, etc) -->
+        <copy force="true" includeemptydirs="false" todir="${SITE_BUILD_DIR}/webapp/WEB-INF/classes" verbose ="on">
             <fileset dir="${SITE_DIR}/bin/">
                 <exclude name="**/package-info.java"/>
             	<exclude name="**/test/**"/>
@@ -147,17 +144,16 @@
             	<exclude name="**/datasources/**"/>
             </fileset>
          </copy>
-		
-		<!-- load site banner into ui images dir-->
-		<copy file="${SITE_LOGO}" todir ="${SITE_BUILD_DIR}/webapp/WebContent/images" verbose="on"/>
-		
-		<copy includeemptydirs="false" todir="${SITE_BUILD_DIR}/webapp/WEB-INF/lib" verbose ="on">
+				
+		<copy force="true" includeemptydirs="false" todir="${SITE_BUILD_DIR}/webapp/WEB-INF/lib" verbose ="on">
             <fileset dir="${SITE_DIR}/lib">
 		   		<exclude name="servlet-api*jar"/>
             </fileset>
         </copy>
 		
-		<copy file="${SITE_DIR}/${JAR_FILE}" todir ="${SITE_BUILD_DIR}/webapp/WEB-INF/lib" verbose="on"/>
+		<copy force="true" file="${SITE_DIR}/${JAR_FILE}" todir ="${SITE_BUILD_DIR}/webapp/WEB-INF/lib" verbose="on"/>
+		
+		<delete dir="${SITE_BUILD_DIR}/webapp/WebContent/resources"/>
 		
 		<war destfile="${WAR_FILE}" webxml="${SITE_BUILD_DIR}/webapp/WEB-INF/WEB.xml" >
 
@@ -172,7 +168,7 @@
 		   	<lib dir="${SITE_BUILD_DIR}/webapp/WEB-INF/lib"/>
 			
 		  	<classes dir="${SITE_BUILD_DIR}/webapp/WEB-INF/classes"/>
-		</war>
+		</war>		
 	</target>
 	
 	<target name="undeploy">
@@ -246,7 +242,7 @@
         <javac includeantruntime="false"  debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" verbose="on" excludes ="**/package-info.java">
             <src path="${SITE_SRC_DIR}"/>
         	<src path="${SITE_BUILD_DIR}"/>
-            <classpath refid="site.build.classes"/>
+            <classpath refid="site.build.junit.classes"/>
         </javac>
     </target>
 	
